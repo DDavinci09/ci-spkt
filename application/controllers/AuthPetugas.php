@@ -5,73 +5,20 @@ class AuthPetugas extends CI_Controller
 {
     public function index()
     {
-        // Validasi input form
         $this->form_validation->set_rules('username', 'username', 'trim|required');
         $this->form_validation->set_rules('password', 'Password', 'trim|required');
-        $this->form_validation->set_rules('role', 'Role', 'required');
 
-        // Jika validasi gagal, tampilkan kembali form login
         if ($this->form_validation->run() == false) {
-            $this->load->view('layoutHome/authheader');
-            $this->load->view('auth/index');
-            $this->load->view('layoutHome/authfooter');
-        } else {
-            // Ambil role dari input form
-            $role = $this->input->post('role');
+            $data['tittle'] = 'CI Login Page';
 
-            // Cek nilai role dan panggil fungsi login yang sesuai
-            if ($role == 'User') {
-                $this->_loginUser();
-            } else if ($role == 'Alumni') {
-                $this->_loginAlumni();
-            } else if ($role == 'Admin') {
-                $this->_loginAdmin();
-            } else {
-                // Jika role tidak valid, kembalikan ke halaman login dengan pesan error
-                $this->session->set_flashdata('error', 'Pilih Role Login!');
-                redirect('auth');
-            }
+            $this->load->view('templates/auth_header', $data);
+            $this->load->view('authPetugas/login');
+            $this->load->view('templates/auth_footer');
+        } else {
+            // validasi success
+            $this->_login();
         }
     }
-
-    private function _loginAlumni()
-    {
-        $username = $this->input->post('username');
-        $password = $this->input->post('password');
-
-        $user = $this->db->get_where('alumni', ['username' => $username])->row_array();
-
-        // jika usernya ada
-        if ($user) {
-            // cek password
-            if (password_verify($password, $user['password'])) {
-                // berhasil login
-                $data = [
-                    'id_alumni' => $user['id_alumni'],
-                    'username' => $user['username'],
-                    'nama' => $user['nama'],
-                    'role' => $user['role'],
-                    'status' => $user['status']
-                ];
-                $this->session->set_userdata($data);
-                redirect('Petugas');
-            } else {
-                // password salah
-                $this->session->set_flashdata('message', '<div class="alert alert-danger" role="alert">
-                    Wrong password!
-                    </div>');
-                redirect('authPetugas');
-            }
-        } else {
-            // username tidak terdatar terdaftar
-            $this->session->set_flashdata('message', '<div class="alert alert-danger" role="alert">
-            username is not registered!
-            </div>');
-            redirect('authPetugas');
-        }
-    }
-
-
 
     private function _login()
     {
